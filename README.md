@@ -49,6 +49,6 @@ L0 <- Run_LORS(Y, X, method = "LORS", screening = "LORS-Screening", tune_method 
 ```
 # Reference
 
-Rhyne, J., Chi, E., Tzeng, J.Y., and Jeng, X.J. (2018) Fast-LORS: Joint Modeling for eQTL Mapping in R.
+Rhyne, J., Chi, E., Tzeng, J.Y., and Jeng, X.J. (2018) FastLORS: Joint Modeling for eQTL Mapping in R.
 
 Rhyne, J., Tzeng, J.Y., Zhang, T., and Jeng, X.J. (2018) eQTL Mapping via Effective SNP Ranking and Screening.
