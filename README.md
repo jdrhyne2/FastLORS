@@ -16,17 +16,36 @@ install_github("jdrhyne2/FastLORS")
 
 # Example Use
 
-The following examples demonstrate how to use the package given a matrix of gene expression Y and a matrix of SNPs respectively.  Note that there is sample data available in the "Data" folder of the FastLORS GitHub page.
+The following examples demonstrate how to use the package given a matrix of gene expression (Y) and a matrix of SNPs (X).  Note that the data used in the FastLORS paper is included in the "Data" folder on the FastLORS GitHub page.  To learn to use the package using a smaller dataset, smaller data can be simulated using the following code.
+
+```r{echo = FALSE, message = FALSE}
+n <- 100
+p <- 1000
+q <- 500
+k <- 7
+set.seed(123)
+X <- matrix(rbinom(n*p,1,0.33),n,p)
+X[sort(sample(which(X == 1), ceiling(length(which(X == 1))/4)))] <- 2
+L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
+B <- matrix(0, ncol(X), ncol(L))
+activeSNPs <- sort(sample(c(1:nrow(B)), 20))
+for(i in 1:length(activeSNPs)){
+  genes_influenced <- sort(sample(c(1:ncol(B)),5))
+  B[activeSNPs[i], genes_influenced] <- 2
+}
+E <- matrix(rnorm(n*q),n,q)
+Y <- X %*% B + L + E
+```
 
 The following example demonstrates how to run Fast-LORS with HC-Screening.  By default, Fast-LORS and two-fold cross-validation will be used in tuning the parameters.
 
 ```r{echo = FALSE, message = FALSE}
-FL <- Run_LORS(Y, SNP, method = "Fast-LORS", screening = "HC-Screening", tune_method = "Fast-LORS")
+FL <- Run_LORS(Y, X, method = "Fast-LORS", screening = "HC-Screening", tune_method = "Fast-LORS")
 ```
 The next example demonstrates how to run the original LORS method with LORS-Screening and the original LORS parameter tuning method.
 
 ```r{echo = FALSE, message = FALSE}
-L0 <- Run_LORS(Y, SNP, method = "LORS", screening = "LORS-Screening", tune_method = "LORS", cross_valid = FALSE)
+L0 <- Run_LORS(Y, X, method = "LORS", screening = "LORS-Screening", tune_method = "LORS", cross_valid = FALSE)
 ```
 # Reference
 
