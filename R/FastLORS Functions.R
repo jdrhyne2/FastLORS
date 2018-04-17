@@ -67,7 +67,7 @@ prox_1 <- function(b, tau){
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -310,7 +310,7 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -439,7 +439,7 @@ LORS0 <- function(Y, X, rho, lambda, maxiter = 1000, eps = 2.2204e-16, tol = 1e-
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -570,7 +570,7 @@ LORS2 <- function(Y, X, L, Omega1, Omega2, B, rho, lambda, tol, maxIter = 1000){
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -1003,7 +1003,7 @@ LORSscreen <- function(Y, X, lambda, tol){
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -1051,7 +1051,7 @@ HC_Screening <- function(Y, X){
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
