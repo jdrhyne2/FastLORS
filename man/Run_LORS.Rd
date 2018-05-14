@@ -17,17 +17,11 @@ Run_LORS(Y, X, method = "Fast-LORS", screening = "HC-Screening",
 
 \item{screening}{chooses whether LORS-Screening or HC-Screening should be performed.  Recommended if the number of SNPs is large.}
 
-\item{tune_method}{chooses whether LORS or Fast-LORS should be used in parameter tuning.}
-
-\item{seed}{the random seed for spliting data into training and validation for parameter tuning}
-
 \item{maxiter}{maximum number of iterations}
 
 \item{eps}{constant used when checking the convergence.  Ensures no division by 0.}
 
 \item{tol}{tolerance level for convergence}
-
-\item{cross_valid}{chooses whether two-fold cross-validation should be used in parameter tuning}
 }
 \description{
 \code{Run_LORS} is a function used to run either Fast-LORS or LORS
@@ -43,7 +37,7 @@ q <- 100
 k <- 10
 set.seed(123)
 X <- matrix(rbinom(n*p,1,0.5),n,p)
-L <- matrix(rnorm(n*k),n,k) \%*\% t(matrix(rnorm(q*k),q,k))
+L <- matrix(rnorm(n*k),n,k) \%*\% t(matrix(rnorm(n*k),q,k))
 B <- matrix(0, ncol(X), ncol(L))
 activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 for(i in 1:length(activeSNPs)){

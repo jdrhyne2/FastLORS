@@ -22,6 +22,6 @@ softImpute(X, Z, Omega0, Omega1, Omega2, alpha0, maxRank)
 \item{maxRank}{maximum rank of the solution}
 }
 \description{
-\code{softImpute} is a function from Mazudmer et al. (2010). It solves the problem min || X - Z ||_Omega + alpha || Z ||_Nulear and is used in parameter tuning for LORS.
+\code{softImpute} is a function from Mazudmer et al. (2010). It solves the problem min || X - Z ||_Omega + \alpha || Z ||_Nulear and is used in parameter tuning for LORS.
 Note:  This function is adapted from the LORS MATLAB implementation
 }

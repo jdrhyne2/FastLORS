@@ -16,7 +16,3 @@ logspace(x1, x2, n = 50)
 \description{
 \code{logspace} is a function to space a sequence evenly on the log scale from x1 to x2
 }
-\examples{
-##Example
-logspace(100,10,5)
-}

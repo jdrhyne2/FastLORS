@@ -18,3 +18,6 @@ InitialEst(Y, X, lambda = NULL)
 InitialEst
 \code{InitialEst} is a function to build an initial estimate for B
 }
+\examples{
+
+}

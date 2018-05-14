@@ -16,7 +16,3 @@ linspace(x1, x2, n = 100)
 \description{
 \code{linspace} is a function to space a sequence linearly from x1 to x2
 }
-\examples{
-##Example
-linspace(100,10,5)
-}
