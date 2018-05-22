@@ -47,6 +47,15 @@ The next example demonstrates how to run the original LORS method with LORS-Scre
 ```r{echo = FALSE, message = FALSE}
 L0 <- Run_LORS(Y, X, method = "LORS", screening = "LORS-Screening", tune_method = "LORS", cross_valid = FALSE)
 ```
+
+# Data
+
+SNP and gene expression data of chromosome 1 for the Asian participants of the third phase of the International HapMap Project (HapMap3) are found in the "Data" folder.
+
+The SNP dataset (X) contains 22179 SNPs for 160 participants of HapMap3 of Asian descent (CHB and JPT).  Note that LD pruning was performed using PLINK to remove SNPs highly correlated with others and SNPs with missing values were also removed.  The original data can be found at ftp://ftp.ncbi.nlm.nih.gov/hapmap/genotypes/hapmap3_r3/plink_format/.
+
+The gene expression dataset (Y) contains the expression of 2010 gene probes for the 160 participants.  The original expression data can be found at https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-264/.  
+
 # Reference
 
 Rhyne, J., Chi, E., Tzeng, J.Y., and Jeng, X.J. (2018) FastLORS: Joint Modeling for eQTL Mapping in R.
