@@ -47,6 +47,79 @@ The next example demonstrates how to run the original LORS method with LORS-Scre
 L0 <- Run_LORS(Y, X, method = "LORS", screening = "LORS-Screening", tune_method = "LORS", cross_valid = FALSE)
 ```
 
+# Example Use for With a Cluster
+
+If the user's data is too large to use the FastLORS package on a local machine, the package contains functions that allow the analysis to be performed in parallel on a cluster.  This section describes an example use for this.
+
+## Screening
+
+If a user has access to a cluster, or more than one machine, the LORS-Screening procedure can be run in parallel using the following code could be used.
+
+```r{echo = FALSE, message = FALSE}
+LORS_Screen_Obj <- LORS_Screen_Parallel(Y, X, chunk = 1)
+```
+
+The chunk argument determines which columns of the X matrix should be used in LORS-Screening.  The LORS_Screen_Parallel function breaks down the X matrix into batches of 1000 columns.  Thus, chunk = 1 corresponds to columns 1,2,...,1000 and chunk = 2 corresponds to columns 1001, ..., 2000.  Thus, since the X matrix in the data folder has 22179 columns, this function must be run for chunk = 1,2,...,23.
+
+The user should save LORS_Screen_Obj and then combine the estimated coefficent matrices returned by LORS_Screen_Parallel.  Following this, the SNPs selected from LORS-Screening can be found using the following code.
+
+```r{echo = FALSE, message = FALSE}
+index_list = c()
+for (i in 1:ncol(Bhat)){
+cands = abs(Bhat[,i])
+sorted_cands <- sort(cands, index.return=TRUE, decreasing=TRUE)$ix[1:nrow(X)]
+index_list <- c(index_list, sorted_cands)
+}
+selectedSNPs <- sort(unique(index_list))
+```
+
+## Parameter Tuning
+
+The parameter tuning procedures of both LORS and FastLORS can also be run either on a cluster or on multiple machines.  The main function needed to perform this task is ParamTuneParallel, which outputs the selected value of lambda and 20 possible values for rho.  FastLORS or LORS can then be used to fit models on the training set using the selected lambda and one candidate value of rho. 
+
+To use FastLORS to perform parameter tuning, the following code can be used.
+
+```r{echo = FALSE, message = FALSE}
+rho_index <- 1
+params <- ParamTuneParallel(Y, X, fold = 1)
+lambda <- params[[1]][[1]]
+rho <- params[[1]][[2]][rho_index]
+Training <- params[[2]]
+Validation <- params[[3]]
+myL2 <- Fast_LORS_Tuning(Y, X, rho, lambda, Training, Validation)
+```
+
+To use LORS for parameter tuning, the following code can be used
+
+```r{echo = FALSE, message = FALSE}
+rho_index <- 1
+params <- ParamTuneParallel(Y, X, fold = 1)
+lambda <- params[[1]][[1]]
+rho <- params[[1]][[2]][5]
+Training <- params[[2]]
+Validation <- params[[3]]
+B <- matrix(0, nrow = ncol(X), ncol = ncol(Y))
+myL2 <- LORS2(Y = Y, X = X, L = NULL, Omega1 = Training, Omega2 = Validation, B = B, rho = rho, lambda = lambda)
+```
+
+Note that the rho_index in the code above can be set from 1,2,...,20.  If one has access to a cluster, 20 different files or one for each rho_index, could be submitted simulateneously, significantly reducing the time required for the parameter tuning procedure.
+
+The user should save the myL2 object so that the optimal value of rho can be chosen based on the residual error returned by LORS or FastLORS.  The value of rho which minimizes the error returned by Fast_LORS_Tuning or LORS2 should be selected to use in the joint modeling stage.
+
+## Joint Modeling After Parallel Parameter Tuning
+
+Suppose the parameter values chosen by the parameter tuning procedure above are lambda_best and rho_best.  Joint modeling can then be performed using FastLORS with the following code.
+
+```r{echo = FALSE, message = FALSE}
+FL_Fit <- Fast_LORS(Y, X, rho_best, lambda_best)
+```
+
+If LORS is used for joint modeling, the following code could be used.
+
+```r{echo = FALSE, message = FALSE}
+LORS_Fit <- LORS0(Y, X, rho_best, lambda_best)
+```
+
 # Data
 
 SNP and gene expression data of chromosome 1 for the Asian participants of the third phase of the International HapMap Project (HapMap3) are found in the "Data" folder.
