@@ -19,14 +19,13 @@ install_github("jdrhyne2/FastLORS")
 The following examples demonstrate how to use the package given a matrix of gene expression (Y) and a matrix of SNPs (X).  Note that the data used in the FastLORS paper is included in the "Data" folder on the FastLORS GitHub page.  To learn to use the package using a smaller dataset, smaller data can be simulated using the following code.
 
 ```r{echo = FALSE, message = FALSE}
-n <- 100
-p <- 1000
-q <- 500
-k <- 7
+n <- 20
+p <- 50
+q <- 30
+k <- 4
 set.seed(123)
-X <- matrix(rbinom(n*p,1,0.33),n,p)
-X[sort(sample(which(X == 1), ceiling(length(which(X == 1))/4)))] <- 2
-L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
+X <- matrix(rbinom(n*p,1,0.5),n,p)
+L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
 B <- matrix(0, ncol(X), ncol(L))
 activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 for(i in 1:length(activeSNPs)){
