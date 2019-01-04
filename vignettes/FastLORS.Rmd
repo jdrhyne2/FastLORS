@@ -76,4 +76,10 @@ library(FastLORS)
 LORS_Obj <- Run_LORS(Y, X, method = "LORS", screening = "LORS-Screening", tune_method = "LORS", cross_valid = FALSE)
 ```
 
-Note that LORS_Obj contains the estimated coefficents, estimated hidden factors, estimated intercept, objective function values, relative change in objective function values, the number of iterations, the selected SNPs, the parameters used in joint modeling, and the time spent on screening, parameter tuning, and joint modeling. 
+Note that LORS_Obj contains the estimated coefficents, estimated hidden factors, estimated intercept, objective function values, relative change in objective function values, the number of iterations, the selected SNPs, the parameters used in joint modeling, and the time spent on screening, parameter tuning, and joint modeling.
+
+# References
+
+Rhyne, J., Jeng, X.J., Chi, E., and Tzeng, J.Y. (2019) FastLORS: Joint Modeling for eQTL Mapping in R.
+
+Yang, C., Wang, L. Zhang, S., and Zhao, H. (2013) Accounting for non-genetic factors by low-rank representation and sparse regression for eQTL mapping. Bioinformatics 29(8) 1026-1034.
