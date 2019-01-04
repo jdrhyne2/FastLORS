@@ -549,7 +549,6 @@ LORS2 <- function(Y, X, L, Omega1, Omega2, B, rho, lambda, tol, maxIter = 1000){
     #fval = 0.5 * t(dum) %*% dum + rho * sum(abs(c(B))) + lambda*sum(abs(diag(W)))
     fval <- 0.5 * norm(dum, type = "2")^2 + rho * sum(abs(B)) + lambda*sum(svd(L)[["d"]])
     res = abs(fval-fval_old)/abs(fval_old+eps)
-    print(paste('Iter ', iter, 'fval', fval, 'res', res))
 
     if (res < tol){
       break
@@ -1356,8 +1355,6 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
 
     res = abs(fval-fval_old)/abs(fval_old+eps)
 
-    print(paste('Iter ', iter, 'fval', fval, 'res', res))
-
     if (res < tol){
       break
     }
@@ -1435,8 +1432,6 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
       dum = c(dum)
       fval = 0.5 * t(dum) %*% dum + rho * sum(abs(c(B))) + lambda*sum(abs(diag(W)))
       res = abs(fval-fval_old)/abs(fval_old+eps)
-
-      print(paste('iter_LORS ', iter_LORS, 'fval', fval, 'res', res))
 
       if (res < tol){
         break
