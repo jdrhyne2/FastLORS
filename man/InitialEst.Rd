@@ -31,7 +31,7 @@ q <- 100
 k <- 10
 set.seed(123)
 X <- matrix(rbinom(n*p,1,0.5),n,p)
-L <- matrix(rnorm(n*k),n,k) \%*\% t(matrix(rnorm(n*k),q,k))
+L <- matrix(rnorm(n*k),n,k) \%*\% t(matrix(rnorm(q*k),q,k))
 B <- matrix(0, ncol(X), ncol(L))
 activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 for(i in 1:length(activeSNPs)){

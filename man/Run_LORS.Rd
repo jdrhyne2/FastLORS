@@ -15,7 +15,7 @@ Run_LORS(Y, X, method = "FastLORS", screening = "LORS-Screening",
 
 \item{method}{chooses with modeling method to run}
 
-\item{screening}{Either "LORS-Screening" or "None".  LORS-Screening is recommended if the number of SNPs is large.}
+\item{screening}{Either "LORS-Screening", "HC-Screening", or "None".  The default method, LORS-Screening, is recommended if the number of SNPs is large. HC-Screening of Rhyne et al. (2018) is under development but is included here as an option.}
 
 \item{tune_method}{chooses whether FastLORS should be used for parameter tuning or the original LORS procedure should be used.  Default is FastLORS}
 
@@ -46,7 +46,7 @@ q <- 30
 k <- 4
 set.seed(123)
 X <- matrix(rbinom(n*p,1,0.5),n,p)
-L <- matrix(rnorm(n*k),n,k) \%*\% t(matrix(rnorm(n*k),q,k))
+L <- matrix(rnorm(n*k),n,k) \%*\% t(matrix(rnorm(q*k),q,k))
 B <- matrix(0, ncol(X), ncol(L))
 activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 for(i in 1:length(activeSNPs)){

@@ -72,7 +72,7 @@ prox_1 <- function(b, tau){
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -317,7 +317,7 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -453,7 +453,7 @@ LORS0 <- function(Y, X, rho, lambda, maxiter = 1000, eps = 2.2204e-16, tol = 1e-
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -587,7 +587,7 @@ LORS2 <- function(Y, X, L, Omega1, Omega2, B, rho, lambda, tol, maxIter = 1000){
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -807,7 +807,7 @@ logspace <- function (x1, x2, n = 50) {
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -970,7 +970,7 @@ survival <- function(t){
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -1065,7 +1065,7 @@ LORSscreen <- function(Y, X, lambda, tol){
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -1094,7 +1094,7 @@ HC_Screening <- function(Y, X){
 #' @param Y gene expression matrix
 #' @param X matrix of SNPs
 #' @param method chooses with modeling method to run
-#' @param screening Either "LORS-Screening" or "None".  LORS-Screening is recommended if the number of SNPs is large.
+#' @param screening Either "LORS-Screening", "HC-Screening", or "None".  The default method, LORS-Screening, is recommended if the number of SNPs is large. HC-Screening of Rhyne et al. (2018) is under development but is included here as an option.
 #' @param tune_method chooses whether FastLORS should be used for parameter tuning or the original LORS procedure should be used.  Default is FastLORS
 #' @param seed random seed to be used for setting training and validation set.  Default is 123.
 #' @param cross_valid chooses whether cross-validation should be used in parameter tuning.  Default is TRUE.
@@ -1116,7 +1116,7 @@ HC_Screening <- function(Y, X){
 #' k <- 4
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -1131,6 +1131,15 @@ HC_Screening <- function(Y, X){
 
 Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tune_method = "FastLORS", seed = 123,  maxiter = 10000, eps = 2.2204e-16, tol = 1e-4, cross_valid = TRUE){
   start <- proc.time()
+
+  if(screening == "HC-Screening"){
+    print("Beginning screening via HC-Screening")
+    start_screening <- proc.time()
+    selectedSNPs <- HC_Screening(Y, X)
+    X <- X[,selectedSNPs]
+    end_screening <- proc.time()
+    screening_time <- end_screening[3] - start_screening[3]
+  }
 
   if(screening == "LORS-Screening"){
     print("Beginning screening via LORS-Screening")
@@ -1470,7 +1479,7 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
 #' k <- 10
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -1552,7 +1561,7 @@ Run_LORS_Screening <- function(Y, X, lambda = NULL){
 #' k <- 4
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
@@ -1638,7 +1647,7 @@ ParamTuneParallel <- function(Y, X, fold, seed = 123){
 #' k <- 4
 #' set.seed(123)
 #' X <- matrix(rbinom(n*p,1,0.5),n,p)
-#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(n*k),q,k))
+#' L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
 #' B <- matrix(0, ncol(X), ncol(L))
 #' activeSNPs <- sort(sample(c(1:nrow(B)), 20))
 #' for(i in 1:length(activeSNPs)){
