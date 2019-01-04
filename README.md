@@ -11,7 +11,7 @@ Install FastLORS from GitHub using
 ```r{echo = FALSE, message = FALSE}
 library(devtools)
 
-install_github("jdrhyne2/FastLORS")
+install_github(repo = "jdrhyne2/FastLORS")
 ```
 
 # Example Use
