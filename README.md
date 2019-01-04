@@ -130,6 +130,6 @@ The gene expression dataset (Y) contains the expression of 2010 gene probes for 
 
 # Reference
 
-Rhyne, J., Chi, E., Tzeng, J.Y., and Jeng, X.J. (2019) FastLORS: Joint Modeling for eQTL Mapping in R.
+Rhyne, J., Jeng, X.J., Chi, E., and Tzeng, J.Y. (2019) FastLORS: Joint Modeling for eQTL Mapping in R.
 
 Rhyne, J., Tzeng, J.Y., Zhang, T., and Jeng, X.J. (2018) eQTL Mapping via Effective SNP Ranking and Screening.
