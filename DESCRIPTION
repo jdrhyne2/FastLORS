@@ -15,3 +15,6 @@ Imports: glmnet,
     utils,
     methods,
     stats
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

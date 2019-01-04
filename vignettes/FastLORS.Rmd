@@ -1,0 +1,79 @@
+---
+title: "FastLORS Vignette"
+author: "Jacob Rhyne, X. Jessie Jeng, Eric Chi, and Jung-Ying Tzeng"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+#Introduction
+The FastLORS R package gives the user the ability to perform eQTL mapping using either the LORS algorithm of Yang et al. (2013) or FastLORS of Rhyne et al. (2019).  This vignette will provide a short tutorial of how the package can be used.
+
+The major function of the package is "Run_LORS", examples of which are given in the subsections below.  In the Run_LORS function, three main arguments should be specified: the screening method, parameter tuning method, and joint modeling method.
+
+## Screening Step 
+
+The package contains an implementation of LORS-Screening introduced in Yang et al. (2013) to reduce the number of SNPs so that joint modeling is computationally feasible.  LORS-Screening can be performed using the FastLORS package if the "screening" argument of Run_LORS is set to "LORS-Screening".  If the data is small enough so that screening does not need to be performed the "screening" argument of Run_LORS can be set to "None", which will skip the screening step of the analysis.
+
+## Parameter Tuning Step
+
+As seen in Rhyne et al. (2019), FastLORS and LORS both solve the same optimization problem
+
+\begin{equation}
+min_{\textbf{B},\textbf{$\mu$},\textbf{L}} \frac{1}{2} \lVert \textbf{Y} - \textbf{XB} - \textbf{1$\mu$} - \textbf{L} \rVert_F^2 + \rho \lVert \textbf{B} \rVert_1 + \lambda \lVert \textbf{L} \rVert_*
+\end{equation}
+
+The package contains two parameter tuning procedures to tune $\rho$ and $\lambda$.  The LORS parameter tuning procedure is presented in detail in Yang et al. (2013) and the FastLORS procedure is found in Rhyne et al. (2019).  Essentially, both of these methods solve the above optimization problem on the training data for several different values of the parameters and choose the pair that minimizes the prediction error.  The LORS parameter tuning procedure uses LORS to fit models for each candiate parameter pair while the FastLORS procedure uses FastLORS to fit the models.  To choose the tuning method, set the "tune_method" argument of the Run_LORS function to either "FastLORS" or "LORS".
+
+## Joint Modeling Step
+
+The package contains two different modeling methods that can be run after parameter tuning is completed, LORS and FastLORS.  The LORS algorithm is presented in Yang et al. (2013) and FastLORS is presented in Rhyne et al. (2019).  Both LORS and FastLORS solve the optimization problem above.  FastLORS uses the proximal gradient mehtod to solve the problem and can take dramatically less time to complete than LORS, as seen in Rhyne et al. (2019).  To choose the joint modeling method, simply set the "method" argument of the Run_LORS function to either "FastLORS" or "LORS".
+
+# Usage Examples
+
+The data included in the Data folder of \url{https://github.com/jdrhyne2/FastLORS} contains gene expression and SNP data from the Asian populations of the third phase of the International HapMap Project.  This is the data analyzed in Rhyne et al. (2019).  Here, we generate some data that only takes a few seconds for both LORS and FastLORS to solve.  This allows users to get familiar with the package without having to wait too long for results. 
+
+```{r}
+n <- 20
+p <- 50
+q <- 30
+k <- 4
+set.seed(123)
+X <- matrix(rbinom(n*p,1,0.5),n,p)
+L <- matrix(rnorm(n*k),n,k) %*% t(matrix(rnorm(q*k),q,k))
+B <- matrix(0, ncol(X), ncol(L))
+activeSNPs <- sort(sample(c(1:nrow(B)), 20))
+for(i in 1:length(activeSNPs)){
+genes_influenced <- sort(sample(c(1:ncol(B)),5))
+B[activeSNPs[i], genes_influenced] <- 2
+}
+E <- matrix(rnorm(n*q),n,q)
+Y <- X %*% B + L + E
+```
+
+Next, we demonstrate how to apply FastLORS and LORS to this data.
+
+## Example of FastLORS
+
+The following code will apply LORS-Screening to reduce the number of SNPs, use FastLORS for parameter tuning, and FastLORS for joint modeling.  Note that two-fold cross validation is used in the parameter tuning procedure.
+
+```{r}
+library(FastLORS)
+Fast_LORS_Obj <- Run_LORS(Y, X, screening = "LORS-Screening")
+```
+
+Note that Fast_LORS_Obj contains the estimated coefficents, estimated hidden factors, estimated intercept, objective function values, relative change in objective function values, the number of iterations, the selected SNPs, the parameters used in joint modeling, and the time spent on screening, parameter tuning, and joint modeling. 
+
+## Example of LORS
+
+The following code will apply LORS-Screening to reduce the number of SNPs, use LORS for parameter tuning, and LORS for joint modeling.  Note that two-fold cross validation is not used in the parameter tuning step, since the "cross_valid" argument is set to FALSE.
+
+```{r}
+library(FastLORS)
+LORS_Obj <- Run_LORS(Y, X, method = "LORS", screening = "LORS-Screening", tune_method = "LORS", cross_valid = FALSE)
+```
+
+Note that LORS_Obj contains the estimated coefficents, estimated hidden factors, estimated intercept, objective function values, relative change in objective function values, the number of iterations, the selected SNPs, the parameters used in joint modeling, and the time spent on screening, parameter tuning, and joint modeling. 
