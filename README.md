@@ -53,7 +53,7 @@ If the user's data is too large to use the FastLORS package on a local machine, 
 
 ## Screening
 
-If a user has access to a cluster, or more than one machine, the LORS-Screening procedure can be run in parallel using the following code could be used.
+If a user has access to a cluster, or more than one machine, the LORS-Screening procedure can be run in parallel using the following code.
 
 ```r{echo = FALSE, message = FALSE}
 LORS_Screen_Obj <- LORS_Screen_Parallel(Y, X, chunk = 1)
