@@ -47,7 +47,7 @@ The next example demonstrates how to run the original LORS method with LORS-Scre
 L0 <- Run_LORS(Y, X, method = "LORS", screening = "LORS-Screening", tune_method = "LORS", cross_valid = FALSE)
 ```
 
-# Example Use for With a Cluster
+# Example Use With a Cluster
 
 If the user's data is too large to use the FastLORS package on a local machine, the package contains functions that allow the analysis to be performed in parallel on a cluster.  This section describes an example use for this.
 
