@@ -133,3 +133,5 @@ The gene expression dataset (Y) contains the expression of 2010 gene probes for 
 Rhyne, J., Jeng, X.J., Chi, E., and Tzeng, J.Y. (2019) FastLORS: Joint Modeling for eQTL Mapping in R.
 
 Rhyne, J., Tzeng, J.Y., Zhang, T., and Jeng, X.J. (2018) eQTL Mapping via Effective SNP Ranking and Screening.
+
+Yang, C., Wang, L. Zhang, S., and Zhao, H. (2013) Accounting for non-genetic factors by low-rank representation and sparse regression for eQTL mapping. Bioinformatics 29(8) 1026-1034.
