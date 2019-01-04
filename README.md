@@ -1,9 +1,9 @@
 # FastLORS
 An R package for joint modeling to perform eQTL mapping
 
-This R package allows users to perform joint modeling of SNPs and the expression of genes. The package provides an implementation of LORS from Yang et al. (2013) as well as Fast-LORS from Rhyne et al. (2018). Fast-LORS uses the proximal gradient method to solve the LORS problem and improves upon the computational time required for joint modeling.
+This R package allows users to perform joint modeling of SNPs and the expression of genes. The package provides an implementation of LORS from Yang et al. (2013) as well as FastLORS from Rhyne et al. (2018). FastLORS uses the proximal gradient method to solve the LORS problem and improves upon the computational time required for joint modeling.
 
-The package also includes two screening methods for reducing the number of SNPs included in the modeling. LORS-Screening from Yang et al. (2013) and HC-Screening from Rhyne et al. (2018) are the two screening methods included in the package. If the data is small enough so that modeling is feasible without screening, the screening option can simply be set to "None."
+The package also includes an implmentation of LORS-Screening from Yang et al. (2013).  If the number of SNPs is large, the screening option in Run_LORS should be set to "LORS-Screening" so that joint modeling will be feasible.  If the data is small enough so that modeling is feasible without screening, the screening option can simply be set to "None."
 
 # Installation
 Install FastLORS from GitHub using
@@ -37,12 +37,12 @@ E <- matrix(rnorm(n*q),n,q)
 Y <- X %*% B + L + E
 ```
 
-The following example demonstrates how to run Fast-LORS with HC-Screening.  By default, Fast-LORS and two-fold cross-validation will be used in tuning the parameters.
+The following example demonstrates how to run FastLORS with LORS-Screening.  By default, FastLORS and two-fold cross-validation will be used in tuning the parameters.
 
 ```r{echo = FALSE, message = FALSE}
-FL <- Run_LORS(Y, X, method = "Fast-LORS", screening = "HC-Screening", tune_method = "Fast-LORS")
+FL <- Run_LORS(Y, X, method = "FastLORS", screening = "LORS-Screening", tune_method = "FastLORS")
 ```
-The next example demonstrates how to run the original LORS method with LORS-Screening and the original LORS parameter tuning method.
+The next example demonstrates how to run the original LORS method with LORS-Screening and the original LORS parameter tuning method without cross-validation.
 
 ```r{echo = FALSE, message = FALSE}
 L0 <- Run_LORS(Y, X, method = "LORS", screening = "LORS-Screening", tune_method = "LORS", cross_valid = FALSE)
@@ -58,6 +58,6 @@ The gene expression dataset (Y) contains the expression of 2010 gene probes for 
 
 # Reference
 
-Rhyne, J., Chi, E., Tzeng, J.Y., and Jeng, X.J. (2018) FastLORS: Joint Modeling for eQTL Mapping in R.
+Rhyne, J., Chi, E., Tzeng, J.Y., and Jeng, X.J. (2019) FastLORS: Joint Modeling for eQTL Mapping in R.
 
 Rhyne, J., Tzeng, J.Y., Zhang, T., and Jeng, X.J. (2018) eQTL Mapping via Effective SNP Ranking and Screening.
