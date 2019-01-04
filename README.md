@@ -66,9 +66,9 @@ The user should save LORS_Screen_Obj and then combine the estimated coefficent m
 ```r{echo = FALSE, message = FALSE}
 index_list = c()
 for (i in 1:ncol(Bhat)){
-cands = abs(Bhat[,i])
-sorted_cands <- sort(cands, index.return=TRUE, decreasing=TRUE)$ix[1:nrow(X)]
-index_list <- c(index_list, sorted_cands)
+  cands = abs(Bhat[,i])
+  sorted_cands <- sort(cands, index.return=TRUE, decreasing=TRUE)$ix[1:nrow(X)]
+  index_list <- c(index_list, sorted_cands)
 }
 selectedSNPs <- sort(unique(index_list))
 ```
