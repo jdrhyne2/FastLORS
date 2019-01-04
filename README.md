@@ -36,7 +36,7 @@ E <- matrix(rnorm(n*q),n,q)
 Y <- X %*% B + L + E
 ```
 
-The following example demonstrates how to run FastLORS with LORS-Screening.  By default, FastLORS and two-fold cross-validation will be used in tuning the parameters.
+The following example demonstrates how to run FastLORS with LORS-Screening.  FastLORS and two-fold cross-validation will be used in tuning the parameters.
 
 ```r{echo = FALSE, message = FALSE}
 FL <- Run_LORS(Y, X, method = "FastLORS", screening = "LORS-Screening", tune_method = "FastLORS")
