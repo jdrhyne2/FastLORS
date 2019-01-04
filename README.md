@@ -59,9 +59,9 @@ If a user has access to a cluster, or more than one machine, the LORS-Screening 
 LORS_Screen_Obj <- LORS_Screen_Parallel(Y, X, chunk = 1)
 ```
 
-The chunk argument determines which columns of the X matrix should be used in LORS-Screening.  The LORS_Screen_Parallel function breaks down the X matrix into batches of 1000 columns.  Thus, chunk = 1 corresponds to columns 1,2,...,1000 and chunk = 2 corresponds to columns 1001, ..., 2000.  Thus, since the X matrix in the data folder has 22179 columns, this function must be run for chunk = 1,2,...,23.
+The chunk argument determines which columns of the X matrix should be used in LORS-Screening.  The LORS_Screen_Parallel function breaks down the X matrix into batches of 1000 columns.  Thus, chunk = 1 corresponds to columns 1,2,...,1000 and chunk = 2 corresponds to columns 1001, ..., 2000 etc. Since the X matrix in the data folder has 22179 columns, this function must be run for chunk = 1,2,...,23 for this data.
 
-The user should save LORS_Screen_Obj and then combine the estimated coefficent matrices returned by LORS_Screen_Parallel.  Following this, the SNPs selected from LORS-Screening can be found using the following code.
+The user should save LORS_Screen_Obj and then combine the estimated coefficent matrices returned by LORS_Screen_Parallel.  Following this, the SNPs selected from LORS-Screening can be found using the following code, where Bhat is the combined coefficient matrix from each run of LORS_Screen_Parallel.
 
 ```r{echo = FALSE, message = FALSE}
 index_list = c()
