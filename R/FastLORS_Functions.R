@@ -57,6 +57,7 @@ prox_1 <- function(b, tau){
 #' @param eps constant used when checking the convergence.  Ensures no division by 0.
 #' @param tol tolerance level for convergence
 #' @param verbose chooses whether details should be printed to console.  Default is FALSE.
+#' @param omega_SOR the value of omega to use if applying successive over-relaxation with FastLORS.
 #' @importFrom glmnet glmnet
 #' @importFrom methods as
 #' @return \item{B}{The estimated coefficients} \item{mu}{The estimated intercept} \item{L}{The estimated matrix of hidden factors} \item{f_val_vec}{The objective function values} \item{res_vec}{The relative change in objective function values} \item{iter}{The number of iterations}
@@ -88,7 +89,7 @@ prox_1 <- function(b, tau){
 #' ## Usage
 #' Fast_LORS(Y, X, rho, lambda)
 
-Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol = 1e-4, verbose = FALSE) {
+Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol = 1e-4, verbose = FALSE, omega_SOR = 1.999) {
 
   ### Initial Setup
 
@@ -138,8 +139,8 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
   res_vec <- c()
 
   t_L <- 1
-  t_B <- 1/norm(t(X) %*% X, type = "F")
-  t_mu <- 1/sqrt(nrow(Y))
+  t_B <- 1/norm(t(X) %*% X, type = "2")
+  t_mu <- 1/nrow(Y)
 
   ones <- matrix(1, nrow = n, ncol = 1)
 
@@ -151,6 +152,28 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
       B <- prox_1(B - t_B * t(X) %*% (X %*% B + ones %*% mu + L - Y), t_B * rho)
       mu <- mu - t_mu * t(ones) %*% (X %*% B + ones %*% mu + L - Y)
 
+      ## Update via SOR
+
+      if(iter > 1){
+        L_update <- (1-omega_SOR) * L_update + omega_SOR * L
+        B_update <- (1-omega_SOR) * B_update + omega_SOR * B
+        mu_update <- (1-omega_SOR) * mu_update + omega_SOR * mu
+
+        L <- L_update
+        B <- B_update
+        mu <- mu_update
+      }
+
+      if(iter == 1){
+        L_update <- L
+        B_update <- B
+        mu_update <- mu
+
+        L <- L_update
+        B <- B_update
+        mu <- mu_update
+      }
+
       #### Check Convergence
 
       dum <- c(Y - X %*% B - ones%*%mu - L)
@@ -160,13 +183,13 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
 
       print(paste('Iter ', iter, 'fval', fval, 'res', res))
 
-      if (res < tol){
-        break
-      }
-
       fval_old <- fval
       f_val_vec <- c(f_val_vec, fval)
       res_vec <- c(res_vec, res)
+
+      if (res < tol){
+        break
+      }
 
       if(iter > 1){
         if(f_val_vec[iter] > f_val_vec[iter-1]){
@@ -176,7 +199,7 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
 
     }
 
-    if(iter < maxiter){
+    if(iter < maxiter & res >= tol){
       print("Beginning LORS Updates")
       for (iter_LORS in (iter+1):maxiter){
 
@@ -206,13 +229,14 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
 
         print(paste('Iter ', iter_LORS, 'fval', fval, 'res', res))
 
+        fval_old <- fval
+        f_val_vec <- c(f_val_vec, fval)
+        res_vec <- c(res_vec, res)
+
         if (res < tol){
           break
         }
 
-        fval_old <- fval
-        f_val_vec <- c(f_val_vec, fval)
-        res_vec <- c(res_vec, res)
       }
     }
   }
@@ -225,6 +249,28 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
       B <- prox_1(B - t_B * t(X) %*% (X %*% B + ones %*% mu + L - Y), t_B * rho)
       mu <- mu - t_mu * t(ones) %*% (X %*% B + ones %*% mu + L - Y)
 
+      ## Update via SOR
+
+      if(iter > 1){
+        L_update <- (1-omega_SOR) * L_update + omega_SOR * L
+        B_update <- (1-omega_SOR) * B_update + omega_SOR * B
+        mu_update <- (1-omega_SOR) * mu_update + omega_SOR * mu
+
+        L <- L_update
+        B <- B_update
+        mu <- mu_update
+      }
+
+      if(iter == 1){
+        L_update <- L
+        B_update <- B
+        mu_update <- mu
+
+        L <- L_update
+        B <- B_update
+        mu <- mu_update
+      }
+
       #### Check Convergence
 
       dum <- c(Y - X %*% B - ones%*%mu - L)
@@ -232,13 +278,13 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
 
       res = abs(fval-fval_old)/abs(fval_old+eps)
 
-      if (res < tol){
-        break
-      }
-
       fval_old <- fval
       f_val_vec <- c(f_val_vec, fval)
       res_vec <- c(res_vec, res)
+
+      if (res < tol){
+        break
+      }
 
       if(iter > 1){
         if(f_val_vec[iter] > f_val_vec[iter-1]){
@@ -248,7 +294,7 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
 
     }
 
-    if(iter < maxiter){
+    if(iter < maxiter & res >= tol){
       for (iter_LORS in (iter+1):maxiter){
 
         #### Compute L
@@ -275,13 +321,15 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
 
         res <- abs(fval-fval_old)/abs(fval_old+eps)
 
+        fval_old <- fval
+        f_val_vec <- c(f_val_vec, fval)
+        res_vec <- c(res_vec, res)
+
         if (res < tol){
           break
         }
 
-        fval_old <- fval
-        f_val_vec <- c(f_val_vec, fval)
-        res_vec <- c(res_vec, res)
+
       }
     }
   }
@@ -357,7 +405,7 @@ LORS0 <- function(Y, X, rho, lambda, maxiter = 1000, eps = 2.2204e-16, tol = 1e-
       L <- U[,index_list] %*% W %*% VT[index_list,]
 
       for (j in 1:q){
-        fit <- glmnet(X, Y[,j]-L[,j], family = "gaussian", lambda = rho/n, standardize = FALSE)
+        fit <- glmnet(X, Y[,j]-L[,j], family = "gaussian", lambda = rho/n, standardize = FALSE) #### need to check this
         a0 <- fit[["a0"]]
         old_beta <- fit[["beta"]]
         my_beta <- as(old_beta, "matrix")
@@ -366,8 +414,7 @@ LORS0 <- function(Y, X, rho, lambda, maxiter = 1000, eps = 2.2204e-16, tol = 1e-
       }
 
       dum <- c(Y - X%*%B - matrix(1, nrow = n, ncol = 1)%*%mu - L)
-      #fval <- 0.5 * t(dum) %*% dum + rho * sum(abs(B)) + lambda*sum(abs(diag(W)))
-      fval <- 0.5 * norm(dum, type = "2")^2 + rho * sum(abs(B)) + lambda*sum(svd(L)[["d"]])
+      fval <- 0.5 * t(dum) %*% dum + rho * sum(abs(B)) + lambda*sum(abs(diag(W)))
 
       res <- abs(fval-fval_old)/abs(fval_old+eps)
 
@@ -397,7 +444,7 @@ LORS0 <- function(Y, X, rho, lambda, maxiter = 1000, eps = 2.2204e-16, tol = 1e-
       L <- U[,index_list] %*% W %*% VT[index_list,]
 
       for (j in 1:q){
-        fit <- glmnet(X, Y[,j]-L[,j], family = "gaussian", lambda = rho/n, standardize = FALSE)
+        fit <- glmnet(X, Y[,j]-L[,j], family = "gaussian", lambda = rho/n, standardize = FALSE) #### need to check this
         a0 <- fit[["a0"]]
         old_beta <- fit[["beta"]]
         my_beta <- as(old_beta, "matrix")
@@ -406,8 +453,7 @@ LORS0 <- function(Y, X, rho, lambda, maxiter = 1000, eps = 2.2204e-16, tol = 1e-
       }
 
       dum <- c(Y - X%*%B - matrix(1, nrow = n, ncol = 1)%*%mu - L)
-      #fval <- 0.5 * t(dum) %*% dum + rho * sum(abs(B)) + lambda*sum(abs(diag(W)))
-      fval <- 0.5 * norm(dum, type = "2")^2 + rho * sum(abs(B)) + lambda*sum(svd(L)[["d"]])
+      fval <- 0.5 * t(dum) %*% dum + rho * sum(abs(B)) + lambda*sum(abs(diag(W)))
 
       res <- abs(fval-fval_old)/abs(fval_old+eps)
 
@@ -546,8 +592,7 @@ LORS2 <- function(Y, X, L, Omega1, Omega2, B, rho, lambda, tol, maxIter = 1000){
     residual = Y - X%*%B - matrix(1, nrow = n, ncol = 1) %*% mu - L
     dum = residual*Omega1
     dum = c(dum)
-    #fval = 0.5 * t(dum) %*% dum + rho * sum(abs(c(B))) + lambda*sum(abs(diag(W)))
-    fval <- 0.5 * norm(dum, type = "2")^2 + rho * sum(abs(B)) + lambda*sum(svd(L)[["d"]])
+    fval = 0.5 * t(dum) %*% dum + rho * sum(abs(c(B))) + lambda*sum(abs(diag(W)))
     res = abs(fval-fval_old)/abs(fval_old+eps)
 
     if (res < tol){
@@ -1100,6 +1145,7 @@ HC_Screening <- function(Y, X){
 #' @param maxiter maximum number of iterations
 #' @param eps constant used when checking the convergence.  Ensures no division by 0.
 #' @param tol tolerance level for convergence
+#' @param omega_SOR the value of omega to use if applying successive over-relaxation with FastLORS.
 #' @importFrom glmnet glmnet
 #' @importFrom stats runif
 #' @return \item{LORS_Obj or Fast_LORS_Obj}{A list produced from LORS or FastLORS containing (1) B: estimate of the coefficient matrix (2) L:  estimate of the matrix of hidden factors (3) mu: estiamte of the vector of intercepts (4) f_val_vec: objective function values and (5) res_vec: relative change in objective function values} \item{selectedSNPs}{The SNPs selected by the screening method} \item{screening_time}{The time (in seconds) spent on screening step} \item{param_time}{The time (in seconds) spent on the parameter tuning step} \item{model_time}{The time (in seconds) spent on the joint modeling step} \item{total_time}{The time (in seconds) spent on the screening, parameter tuning, and joint modeling steps}  \item{rho}{The value of rho chosen through parameter tuning} \item{lambda}{The value of lambda chosen through parameter tuning}
@@ -1128,7 +1174,7 @@ HC_Screening <- function(Y, X){
 #' ## Usage
 #' Run_LORS(Y, X, method = "FastLORS")
 
-Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tune_method = "FastLORS", seed = 123,  maxiter = 10000, eps = 2.2204e-16, tol = 1e-4, cross_valid = TRUE){
+Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tune_method = "FastLORS", seed = 123,  maxiter = 10000, eps = 2.2204e-16, tol = 1e-4, cross_valid = TRUE, omega_SOR = 1.999){
   start <- proc.time()
 
   if(screening == "HC-Screening"){
@@ -1197,7 +1243,7 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
       print(paste("On rho",irho,"of 20"))
       rho <- rhoseq[irho]
       if(tune_method == "FastLORS"){
-        myL2 <- Fast_LORS_Tuning(Y = Y, X = X, rho = rho, lambda = lambda, Training = Training, Validation = Validation, tol = tol, maxiter = maxiter, B = B, L = L, mu = mu)
+        myL2 <- Fast_LORS_Tuning(Y = Y, X = X, rho = rho, lambda = lambda, Training = Training, Validation = Validation, tol = tol, maxiter = maxiter, B = B, L = L, mu = mu, omega_SOR = omega_SOR)
       }
       if(tune_method == "LORS"){
         myL2 <- LORS2(Y = Y, X = X, L = L, Omega1 = Training, Omega2 = Validation, B = B, rho = rhoseq[irho], lambda = lambda, tol = tol, maxIter = maxiter)
@@ -1233,7 +1279,7 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
   if (method == "FastLORS"){
     print("Running FastLORS")
     start_model <- proc.time()
-    Fast_LORS_Obj <- Fast_LORS(Y, X, rho, lambda, maxiter, eps, tol)
+    Fast_LORS_Obj <- Fast_LORS(Y, X, rho, lambda, maxiter, eps, tol, omega_SOR = omega_SOR)
     end_model <- proc.time()
     model_time <- end_model[3] - start_model[3]
     end <- proc.time()
@@ -1274,13 +1320,14 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
 #' @param B an estimate for matrix of coefficients.  Default is NULL.
 #' @param mu an estimate for the intercept.  Default is NULL.
 #' @param L an estimate for the hidden factors  Default is NULL.
+#' @param omega_SOR the value of omega to use if applying successive over-relaxation with FastLORS.
 #' @importFrom glmnet glmnet
 #' @importFrom methods as
 #' @return \item{B}{matrix of coefficients} \item{L}{matrix of hidden factors} \item{mu}{vector of intercepts} \item{Err}{Residual sum of squares of validation data} \item{f_vals}{Objective function values} \item{res_vec}{Relative change in objective function values} \item{iter}{Number of iterations}
 #' @export
 #'
 
-Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 5000, eps = 2.2204e-16, tol = 1e-4, B = NULL, mu = NULL, L = NULL) {
+Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 5000, eps = 2.2204e-16, tol = 1e-4, B = NULL, mu = NULL, L = NULL, omega_SOR = 1.999) {
 
   ### Initial Setup
 
@@ -1336,8 +1383,8 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
   res_vec <- c()
 
   t_L <- 1
-  t_B <- 1/norm(t(X) %*% X, type = "F")
-  t_mu <- 1/sqrt(nrow(Y))
+  t_B <- 1/norm(t(X) %*% X, type = "2")
+  t_mu <- 1/nrow(Y)
 
   ones <- matrix(1, nrow = n, ncol = 1)
 
@@ -1348,6 +1395,28 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
     B <- prox_1(B - t_B * t(X) %*% (Training * (X %*% B + ones %*% mu + L - Y)), t_B * rho)
     mu <- mu - t_mu * t(ones) %*% (Training * (X %*% B + ones %*% mu + L - Y))
 
+    ## Update via SOR
+
+    if(iter > 1){
+      L_update <- (1-omega_SOR) * L_update + omega_SOR * L
+      B_update <- (1-omega_SOR) * B_update + omega_SOR * B
+      mu_update <- (1-omega_SOR) * mu_update + omega_SOR * mu
+
+      L <- L_update
+      B <- B_update
+      mu <- mu_update
+    }
+
+    if(iter == 1){
+      L_update <- L
+      B_update <- B
+      mu_update <- mu
+
+      L <- L_update
+      B <- B_update
+      mu <- mu_update
+    }
+
     #### Check Convergence
 
     dum <- c(Training * (Y - X %*% B - ones%*%mu - L))
@@ -1355,13 +1424,15 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
 
     res = abs(fval-fval_old)/abs(fval_old+eps)
 
-    if (res < tol){
-      break
-    }
-
     fval_old <- fval
     f_val_vec <- c(f_val_vec, fval)
     res_vec <- c(res_vec, res)
+
+    #print(paste('Iter ', iter, 'fval', fval, 'res', res))
+
+    if (res < tol){
+      break
+    }
 
     if(iter > 1){
       if(f_val_vec[iter] > f_val_vec[iter-1]){
@@ -1375,7 +1446,7 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
 
   }
 
-  if(iter < maxiter){
+  if(iter < maxiter & res >= tol){
     #print("Beginning LORS Updates")
     energy = Inf
 
@@ -1433,13 +1504,15 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
       fval = 0.5 * t(dum) %*% dum + rho * sum(abs(c(B))) + lambda*sum(abs(diag(W)))
       res = abs(fval-fval_old)/abs(fval_old+eps)
 
-      if (res < tol){
-        break
-      }
-
       fval_old <- fval
       f_val_vec <- c(f_val_vec, fval)
       res_vec <- c(res_vec, res)
+
+      #print(paste('Iter ', iter_LORS, 'fval', fval, 'res', res))
+
+      if (res < tol){
+        break
+      }
 
     }
 
