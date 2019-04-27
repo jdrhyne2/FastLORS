@@ -5,6 +5,14 @@ This R package allows users to perform joint modeling of SNPs and the expression
 
 The package also includes an implmentation of LORS-Screening from Yang et al. (2013).  If the number of SNPs is large, the screening option in Run_LORS should be set to "LORS-Screening" so that joint modeling will be feasible.  If the data is small enough so that modeling is feasible without screening, the screening option can simply be set to "None."
 
+The package includes the ability to apply successive over-relaxation with FastLORS.  Applying SOR can lead to faster convergence for FastLORS.  Let $\omega \in (0,2)$ and $\Psi(\Theta_m)$ denote one round of updates to the FastLORS parameters.  The SOR steps are calculated by
+
+$$
+\Theta_{m+1} = (1 - \omega)\Theta_m + \omega \Psi(\Theta_m).
+$$
+
+Thus setting $\omega=1$ would yield the FastLORS algorithm with no additonal weight added to the updates.  Setting $\omega>1$ can lead to faster convergence.
+
 # Installation
 Install FastLORS from GitHub using
 
