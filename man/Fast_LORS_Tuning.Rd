@@ -5,7 +5,8 @@
 \title{Fast_LORS_Tuning}
 \usage{
 Fast_LORS_Tuning(Y, X, rho, lambda, Training, Validation, maxiter = 5000,
-  eps = 2.2204e-16, tol = 1e-04, B = NULL, mu = NULL, L = NULL)
+  eps = 2.2204e-16, tol = 1e-04, B = NULL, mu = NULL, L = NULL,
+  omega_SOR = 1.999)
 }
 \arguments{
 \item{Y}{gene expression matrix}
@@ -31,6 +32,8 @@ Fast_LORS_Tuning(Y, X, rho, lambda, Training, Validation, maxiter = 5000,
 \item{mu}{an estimate for the intercept.  Default is NULL.}
 
 \item{L}{an estimate for the hidden factors  Default is NULL.}
+
+\item{omega_SOR}{the value of omega to use if applying successive over-relaxation with FastLORS.}
 }
 \value{
 \item{B}{matrix of coefficients} \item{L}{matrix of hidden factors} \item{mu}{vector of intercepts} \item{Err}{Residual sum of squares of validation data} \item{f_vals}{Objective function values} \item{res_vec}{Relative change in objective function values} \item{iter}{Number of iterations}

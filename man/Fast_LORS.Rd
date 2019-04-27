@@ -5,7 +5,7 @@
 \title{Fast_LORS}
 \usage{
 Fast_LORS(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16,
-  tol = 1e-04, verbose = FALSE)
+  tol = 1e-04, verbose = FALSE, omega_SOR = 1.999)
 }
 \arguments{
 \item{Y}{gene expression matrix}
@@ -23,6 +23,8 @@ Fast_LORS(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16,
 \item{tol}{tolerance level for convergence}
 
 \item{verbose}{chooses whether details should be printed to console.  Default is FALSE.}
+
+\item{omega_SOR}{the value of omega to use if applying successive over-relaxation with FastLORS.}
 }
 \value{
 \item{B}{The estimated coefficients} \item{mu}{The estimated intercept} \item{L}{The estimated matrix of hidden factors} \item{f_val_vec}{The objective function values} \item{res_vec}{The relative change in objective function values} \item{iter}{The number of iterations}

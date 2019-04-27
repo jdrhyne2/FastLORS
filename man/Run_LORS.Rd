@@ -6,7 +6,7 @@
 \usage{
 Run_LORS(Y, X, method = "FastLORS", screening = "LORS-Screening",
   tune_method = "FastLORS", seed = 123, maxiter = 10000,
-  eps = 2.2204e-16, tol = 1e-04, cross_valid = TRUE)
+  eps = 2.2204e-16, tol = 1e-04, cross_valid = TRUE, omega_SOR = 1.999)
 }
 \arguments{
 \item{Y}{gene expression matrix}
@@ -28,6 +28,8 @@ Run_LORS(Y, X, method = "FastLORS", screening = "LORS-Screening",
 \item{tol}{tolerance level for convergence}
 
 \item{cross_valid}{chooses whether cross-validation should be used in parameter tuning.  Default is TRUE.}
+
+\item{omega_SOR}{the value of omega to use if applying successive over-relaxation with FastLORS.}
 }
 \value{
 \item{LORS_Obj or Fast_LORS_Obj}{A list produced from LORS or FastLORS containing (1) B: estimate of the coefficient matrix (2) L:  estimate of the matrix of hidden factors (3) mu: estiamte of the vector of intercepts (4) f_val_vec: objective function values and (5) res_vec: relative change in objective function values} \item{selectedSNPs}{The SNPs selected by the screening method} \item{screening_time}{The time (in seconds) spent on screening step} \item{param_time}{The time (in seconds) spent on the parameter tuning step} \item{model_time}{The time (in seconds) spent on the joint modeling step} \item{total_time}{The time (in seconds) spent on the screening, parameter tuning, and joint modeling steps}  \item{rho}{The value of rho chosen through parameter tuning} \item{lambda}{The value of lambda chosen through parameter tuning}
