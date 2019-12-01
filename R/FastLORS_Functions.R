@@ -139,7 +139,7 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
   res_vec <- c()
 
   t_L <- 1
-  t_B <- 1/norm(t(X) %*% X, type = "2")
+  t_B <- 1/(max(svd(X)$d)^2)
   t_mu <- 1/nrow(Y)
 
   ones <- matrix(1, nrow = n, ncol = 1)
@@ -1383,7 +1383,7 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
   res_vec <- c()
 
   t_L <- 1
-  t_B <- 1/norm(t(X) %*% X, type = "2")
+  t_B <- 1/(max(svd(X)$d)^2)
   t_mu <- 1/nrow(Y)
 
   ones <- matrix(1, nrow = n, ncol = 1)
