@@ -103,7 +103,7 @@ To use LORS for parameter tuning, the following code can be used
 rho_index <- 1
 params <- ParamTuneParallel(Y, X, fold = 1)
 lambda <- params[[1]][[1]]
-rho <- params[[1]][[2]][5]
+rho <- params[[1]][[2]][rho_index]
 Training <- params[[2]]
 Validation <- params[[3]]
 B <- matrix(0, nrow = ncol(X), ncol = ncol(Y))
