@@ -26,7 +26,7 @@ svd_st <- function(X, lambda){
   if(length(index_list) == 0){
     L <- matrix(0, nrow(X), ncol(X))
   }
-
+  
   return(L)
 }
 
@@ -90,20 +90,20 @@ prox_1 <- function(b, tau){
 #' Fast_LORS(Y, X, rho, lambda)
 
 Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol = 1e-4, verbose = FALSE, omega_SOR = 1.999) {
-
+  
   ### Initial Setup
-
+  
   n <- nrow(Y)
   q <- ncol(Y)
   p <- ncol(X)
   ones <- matrix(1, nrow = n, ncol = 1)
-
+  
   B <- matrix(0, nrow = p, ncol = q)
   mu <- matrix(0, nrow = 1, ncol = q)
   L <- matrix(0, nrow = n, ncol = q)
-
+  
   ### Proximal Mapping Functions
-
+  
   ## Nuclear Norm:  Soft Thresholded SVD
   svd_st <- function(X, lambda){
     mysvd <- svd(X)
@@ -124,85 +124,85 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
     if(length(index_list) == 0){
       L <- matrix(0, nrow(X), ncol(X))
     }
-
+    
     return(L)
   }
-
+  
   ## 1 norm:  Soft Threshold Function
   prox_1 <- function(b, tau){
     prox_b <- sign(b)*(sapply(abs(b) - tau, FUN=function(x) {max(x,0)}))
     return(prox_b)
   }
-
+  
   fval_old <- 0
   f_val_vec <- c()
   res_vec <- c()
-
+  
   t_L <- 1
   t_B <- 1/(max(svd(X)$d)^2)
   t_mu <- 1/nrow(Y)
-
+  
   ones <- matrix(1, nrow = n, ncol = 1)
-
+  
   if(verbose == TRUE){
     for(iter in 1:maxiter){
-
+      
       #### Update B, mu, and L
       L <- svd_st(L - t_L * (X %*% B + ones %*% mu + L - Y), t_L * lambda)
       B <- prox_1(B - t_B * t(X) %*% (X %*% B + ones %*% mu + L - Y), t_B * rho)
       mu <- mu - t_mu * t(ones) %*% (X %*% B + ones %*% mu + L - Y)
-
+      
       ## Update via SOR
-
+      
       if(iter > 1){
         L_update <- (1-omega_SOR) * L_update + omega_SOR * L
         B_update <- (1-omega_SOR) * B_update + omega_SOR * B
         mu_update <- (1-omega_SOR) * mu_update + omega_SOR * mu
-
+        
         L <- L_update
         B <- B_update
         mu <- mu_update
       }
-
+      
       if(iter == 1){
         L_update <- L
         B_update <- B
         mu_update <- mu
-
+        
         L <- L_update
         B <- B_update
         mu <- mu_update
       }
-
+      
       #### Check Convergence
-
+      
       dum <- c(Y - X %*% B - ones%*%mu - L)
       fval <- 0.5 * norm(dum, type = "2")^2 + rho * sum(abs(B)) + lambda*sum(svd(L)[["d"]])
-
+      
       res = abs(fval-fval_old)/abs(fval_old+eps)
-
+      
       print(paste('Iter ', iter, 'fval', fval, 'res', res))
-
+      
       fval_old <- fval
       f_val_vec <- c(f_val_vec, fval)
       res_vec <- c(res_vec, res)
-
+      
       if (res < tol){
         break
       }
-
+      
       if(iter > 1){
         if(f_val_vec[iter] > f_val_vec[iter-1]){
           break
         }
       }
-
+      
     }
-
+    
     if(iter < maxiter & res >= tol){
       print("Beginning LORS Updates")
       for (iter_LORS in (iter+1):maxiter){
-
+        
         #### Compute L
         mysvd <- svd(Y - X%*%B-matrix(1, nrow = n, ncol = 1) %*% mu)
         U <- mysvd[["u"]]
@@ -212,7 +212,7 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
         index_list <- which(d >= lambda)
         W <- diag(d[index_list] - lambda)
         L <- U[,index_list] %*% W %*% VT[index_list,]
-
+        
         for (j in 1:q){
           fit <- glmnet(X, Y[,j]-L[,j], family = "gaussian", lambda = rho/n, standardize = FALSE)
           a0 <- fit[["a0"]]
@@ -221,82 +221,82 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
           B[,j] <- my_beta
           mu[,j] <- a0
         }
-
+        
         dum <- c(Y - X%*%B - matrix(1, nrow = n, ncol = 1)%*%mu - L)
         fval <- 0.5 * t(dum) %*% dum + rho * sum(abs(B)) + lambda*sum(abs(diag(W)))
-
+        
         res <- abs(fval-fval_old)/abs(fval_old+eps)
-
+        
         print(paste('Iter ', iter_LORS, 'fval', fval, 'res', res))
-
+        
         fval_old <- fval
         f_val_vec <- c(f_val_vec, fval)
         res_vec <- c(res_vec, res)
-
+        
         if (res < tol){
           break
         }
-
+        
       }
     }
   }
-
+  
   if(verbose == FALSE){
     for(iter in 1:maxiter){
-
+      
       #### Update B, mu, and L
       L <- svd_st(L - t_L * (X %*% B + ones %*% mu + L - Y), t_L * lambda)
       B <- prox_1(B - t_B * t(X) %*% (X %*% B + ones %*% mu + L - Y), t_B * rho)
       mu <- mu - t_mu * t(ones) %*% (X %*% B + ones %*% mu + L - Y)
-
+      
       ## Update via SOR
-
+      
       if(iter > 1){
         L_update <- (1-omega_SOR) * L_update + omega_SOR * L
         B_update <- (1-omega_SOR) * B_update + omega_SOR * B
         mu_update <- (1-omega_SOR) * mu_update + omega_SOR * mu
-
+        
         L <- L_update
         B <- B_update
         mu <- mu_update
       }
-
+      
       if(iter == 1){
         L_update <- L
         B_update <- B
         mu_update <- mu
-
+        
         L <- L_update
         B <- B_update
         mu <- mu_update
       }
-
+      
       #### Check Convergence
-
+      
       dum <- c(Y - X %*% B - ones%*%mu - L)
       fval <- 0.5 * norm(dum, type = "2")^2 + rho * sum(abs(B)) + lambda*sum(svd(L)[["d"]])
-
+      
       res = abs(fval-fval_old)/abs(fval_old+eps)
-
+      
       fval_old <- fval
       f_val_vec <- c(f_val_vec, fval)
       res_vec <- c(res_vec, res)
-
+      
       if (res < tol){
         break
       }
-
+      
       if(iter > 1){
         if(f_val_vec[iter] > f_val_vec[iter-1]){
           break
         }
       }
-
+      
     }
-
+    
     if(iter < maxiter & res >= tol){
       for (iter_LORS in (iter+1):maxiter){
-
+        
         #### Compute L
         mysvd <- svd(Y - X%*%B-matrix(1, nrow = n, ncol = 1) %*% mu)
         U <- mysvd[["u"]]
@@ -306,7 +306,7 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
         index_list <- which(d >= lambda)
         W <- diag(d[index_list] - lambda)
         L <- U[,index_list] %*% W %*% VT[index_list,]
-
+        
         for (j in 1:q){
           fit <- glmnet(X, Y[,j]-L[,j], family = "gaussian", lambda = rho/n, standardize = FALSE)
           a0 <- fit[["a0"]]
@@ -315,25 +315,25 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
           B[,j] <- my_beta
           mu[,j] <- a0
         }
-
+        
         dum <- c(Y - X%*%B - matrix(1, nrow = n, ncol = 1)%*%mu - L)
         fval <- 0.5 * t(dum) %*% dum + rho * sum(abs(B)) + lambda*sum(abs(diag(W)))
-
+        
         res <- abs(fval-fval_old)/abs(fval_old+eps)
-
+        
         fval_old <- fval
         f_val_vec <- c(f_val_vec, fval)
         res_vec <- c(res_vec, res)
-
+        
         if (res < tol){
           break
         }
-
-
+        
+        
       }
     }
   }
-
+  
   ### Return the B, L, mu, objective function values, residual values, and total iterates
   return(list("B" = B, "L" = L, "mu" = mu, "f_vals" = f_val_vec, "res_vec" = res_vec, "iter" = length(f_val_vec)))
 }
@@ -380,20 +380,20 @@ Fast_LORS <- function(Y, X, rho, lambda, maxiter = 5000, eps = 2.2204e-16, tol =
 #' LORS0(Y, X, rho, lambda)
 
 LORS0 <- function(Y, X, rho, lambda, maxiter = 1000, eps = 2.2204e-16, tol = 1e-4, verbose = FALSE){
-
+  
   n <- nrow(X)
   p <- ncol(X)
   q <- ncol(Y)
-
+  
   B <- matrix(0, nrow = p, ncol=q)
   mu <- matrix(0, nrow=1, ncol=q)
-
+  
   fval_old <- 0
   f_val_vec <- c()
   res_vec <- c()
   if(verbose == TRUE){
     for (iter in 1:maxiter){
-
+      
       #### Compute L
       mysvd <- svd(Y - X%*%B-matrix(1, nrow = n, ncol = 1) %*% mu)
       U <- mysvd[["u"]]
@@ -403,36 +403,36 @@ LORS0 <- function(Y, X, rho, lambda, maxiter = 1000, eps = 2.2204e-16, tol = 1e-
       index_list <- which(d >= lambda)
       W <- diag(d[index_list] - lambda)
       L <- U[,index_list] %*% W %*% VT[index_list,]
-
+      
       for (j in 1:q){
-        fit <- glmnet(X, Y[,j]-L[,j], family = "gaussian", lambda = rho/n, standardize = FALSE) #### need to check this
+        fit <- glmnet(X, Y[,j]-L[,j], family = "gaussian", lambda = rho/n, standardize = FALSE)
         a0 <- fit[["a0"]]
         old_beta <- fit[["beta"]]
         my_beta <- as(old_beta, "matrix")
         B[,j] <- my_beta
         mu[,j] <- a0
       }
-
+      
       dum <- c(Y - X%*%B - matrix(1, nrow = n, ncol = 1)%*%mu - L)
       fval <- 0.5 * t(dum) %*% dum + rho * sum(abs(B)) + lambda*sum(abs(diag(W)))
-
+      
       res <- abs(fval-fval_old)/abs(fval_old+eps)
-
+      
       print(paste('Iter ', iter, 'fval', fval, 'res', res))
-
+      
       if (res < tol){
         break
       }
-
+      
       fval_old <- fval
       f_val_vec <- c(f_val_vec, fval)
       res_vec <- c(res_vec, res)
     }
   }
-
+  
   if(verbose == FALSE){
     for (iter in 1:maxiter){
-
+      
       #### Compute L
       mysvd <- svd(Y - X%*%B-matrix(1, nrow = n, ncol = 1) %*% mu)
       U <- mysvd[["u"]]
@@ -442,25 +442,25 @@ LORS0 <- function(Y, X, rho, lambda, maxiter = 1000, eps = 2.2204e-16, tol = 1e-
       index_list <- which(d >= lambda)
       W <- diag(d[index_list] - lambda)
       L <- U[,index_list] %*% W %*% VT[index_list,]
-
+      
       for (j in 1:q){
-        fit <- glmnet(X, Y[,j]-L[,j], family = "gaussian", lambda = rho/n, standardize = FALSE) #### need to check this
+        fit <- glmnet(X, Y[,j]-L[,j], family = "gaussian", lambda = rho/n, standardize = FALSE)
         a0 <- fit[["a0"]]
         old_beta <- fit[["beta"]]
         my_beta <- as(old_beta, "matrix")
         B[,j] <- my_beta
         mu[,j] <- a0
       }
-
+      
       dum <- c(Y - X%*%B - matrix(1, nrow = n, ncol = 1)%*%mu - L)
       fval <- 0.5 * t(dum) %*% dum + rho * sum(abs(B)) + lambda*sum(abs(diag(W)))
-
+      
       res <- abs(fval-fval_old)/abs(fval_old+eps)
-
+      
       if (res < tol){
         break
       }
-
+      
       fval_old <- fval
       f_val_vec <- c(f_val_vec, fval)
       res_vec <- c(res_vec, res)
@@ -521,64 +521,64 @@ LORS0 <- function(Y, X, rho, lambda, maxiter = 1000, eps = 2.2204e-16, tol = 1e-
 #' LORS2(Y, X, L, Omega1, Omega2, B, rho, lambda, tol)
 
 LORS2 <- function(Y, X, L, Omega1, Omega2, B, rho, lambda, tol, maxIter = 1000){
-
+  
   eps = 2.2204e-16
-
+  
   n = nrow(X)
   p = ncol(X)
   q = ncol(Y)
-
+  
   mu = matrix(0, nrow=1, ncol=q)
   fval_old = 0
-
+  
   maxInnerIts = 50
-
+  
   #### initialization
-
+  
   if (is.null(L) == 1){
     L = Y
   }
-
+  
   energy = Inf
-
+  
   for (iter in 1:maxIter){
-
+    
     for (innerIts in 1:maxInnerIts){
-
+      
       Z = Y - X %*% B - matrix(1, nrow = n, ncol = 1) %*% mu;
       C = Z*Omega1 + L*(!Omega1)
-
+      
       U = svd(C)[["u"]]
       D = diag(svd(C)[["d"]])
       V = svd(C)[["v"]]
       VT = t(V)
       # soft impute
       d = diag(D)
-
+      
       index_list = which(d > lambda)
-
+      
       W = diag(d[index_list] - lambda, nrow = length(index_list), ncol = length(index_list))
       L = U[,index_list] %*% W %*% VT[index_list,]
-
+      
       Lnorm = sum(d[index_list] - lambda)
       energy_old = energy
-
+      
       cL = c(L)
       cZ = c(Z)
       newvec = matrix(cL[c(Omega1 == 1)]-cZ[c(Omega1 == 1)], ncol = 1)
       energy = lambda * Lnorm + norm(newvec,'F')/2
-
+      
       mydiff = abs(energy - energy_old) / energy_old
-
+      
       if (!is.na(mydiff)){
         if (abs(energy - energy_old) / energy_old < tol){
           break
         }
       }
     }
-
+    
     ### Compute B using glmnet
-
+    
     for (j in 1:q){
       fit <- glmnet(X[Omega1[,j],], matrix(Y[Omega1[,j],j]) - matrix(L[Omega1[,j],j]), family = "gaussian", lambda = rho/sum(Omega1[,j]), standardize = FALSE)
       a0 <- fit[["a0"]]
@@ -587,25 +587,25 @@ LORS2 <- function(Y, X, L, Omega1, Omega2, B, rho, lambda, tol, maxIter = 1000){
       B[,j] <- my_beta
       mu[,j] <- a0
     }
-
+    
     # Convergence
     residual = Y - X%*%B - matrix(1, nrow = n, ncol = 1) %*% mu - L
     dum = residual*Omega1
     dum = c(dum)
     fval = 0.5 * t(dum) %*% dum + rho * sum(abs(c(B))) + lambda*sum(abs(diag(W)))
     res = abs(fval-fval_old)/abs(fval_old+eps)
-
+    
     if (res < tol){
       break
     }
-
+    
     fval_old <- fval
-
+    
   }
-
+  
   err = residual*Omega2
   Err = t(c(err)) %*% c(err) / sum(Omega2)
-
+  
   return (list("B" = B, "mu" = mu, "L" = L, "Err" = Err))
 }
 
@@ -647,11 +647,11 @@ LORS2 <- function(Y, X, L, Omega1, Omega2, B, rho, lambda, tol, maxIter = 1000){
 GetMaxRho <- function(X, Y, L, Omega0){
   q = ncol(Y)
   maxrho = matrix(0, nrow = q, ncol = 1)
-
+  
   for(i in 1:q){
     maxrho[i,1] = max(abs(t(X) %*% ((matrix(Y[,i], nrow = nrow(Y), ncol = 1) - matrix(L[,i], nrow = nrow(L), ncol = 1)) * matrix(Omega0[,i], nrow = nrow(Omega0), ncol = 1))))
   }
-
+  
   MaxRho = max(maxrho)
   return(MaxRho)
 }
@@ -704,12 +704,12 @@ SVT <- function(Y, lambda)
 #'
 
 softImpute <- function(X,Z,Omega0,Omega1,Omega2,alpha0,maxRank){
-
+  
   X_0 = X*Omega0
   if (is.null(Z) == TRUE) {
     Z = X_0
   }
-
+  
   if (is.null(alpha0) == TRUE){
     my_svd = svd(X_0)
     UU = my_svd[["u"]]
@@ -717,26 +717,26 @@ softImpute <- function(X,Z,Omega0,Omega1,Omega2,alpha0,maxRank){
     VV = my_svd[["v"]]
     alpha0 = DD[2,2]
   }
-
+  
   if (is.null(maxRank) == TRUE){
     maxRank = -1
   }
-
+  
   # parameters
   eta = 0.9
   epsilon = 1e-4
   maxInnerIts = 50
-
+  
   ## soft-impute
-
+  
   # 1. initialize
   alpha = alpha0
-
+  
   Err = c()
   rank_alpha = c()
   znorm = c()
   Alpha = c()
-
+  
   while (TRUE){
     energy = Inf
     for (innerIts in 1:maxInnerIts){
@@ -753,18 +753,18 @@ softImpute <- function(X,Z,Omega0,Omega1,Omega2,alpha0,maxRank){
       if (length(idx) > 0){
         Z = matrix(U[,idx], ncol = length(idx)) %*% diag( d[idx] - alpha , nrow = length(idx)) %*% matrix(VT[idx,], nrow = length(idx))
       }
-
+      
       else{
         Z = matrix(0, nrow = nrow(U), ncol = ncol(VT))
       }
-
+      
       Znorm = sum(d[idx]-alpha)
       energy_old = energy
       cZ = c(Z)
       cX = c(X)
       newvec = matrix(cZ[c(Omega1 == 1)]-cX[c(Omega1 == 1)], ncol = 1)
       energy = alpha*Znorm + norm(newvec, 'F')/2
-
+      
       mydiff = abs(energy - energy_old) / energy_old
       if (!is.na(mydiff)){
         if (abs(energy - energy_old) / energy_old < epsilon){
@@ -772,7 +772,7 @@ softImpute <- function(X,Z,Omega0,Omega1,Omega2,alpha0,maxRank){
         }
       }
     }
-
+    
     e = X * Omega2 - Z * Omega2
     err2 = t(c(e)) %*%  c(e)
     Err = cbind(Err, err2)
@@ -780,15 +780,15 @@ softImpute <- function(X,Z,Omega0,Omega1,Omega2,alpha0,maxRank){
     k = length(idx)
     rank_alpha = cbind(rank_alpha, k)
     Alpha = cbind(Alpha, alpha)
-
+    
     if (k <= maxRank && alpha > 1e-3){
       alpha = alpha * eta
     }
-
+    
     else{
       break
     }
-
+    
   }
   return(list("Z" = Z, "Err" = Err, "rank_alpha" = rank_alpha, "znorm" = znorm, "Alpha" = Alpha))
 }
@@ -864,21 +864,21 @@ logspace <- function (x1, x2, n = 50) {
 #' Init_est <- InitialEst(Y,X)
 
 InitialEst <- function(Y, X, lambda = NULL){
-
+  
   n = nrow(Y)
   q = ncol(Y)
   p = ncol(X)
-
+  
   Omega0 = !(is.na(Y))
   Y[is.na(Y)] <- 0
-
+  
   if(is.null(lambda) == TRUE){
     # first use soft-impute to select a reasonable lambda
-
+    
     mask = matrix(runif(n*q) > 0.5, nrow = n, ncol = q)
     Omega1 = Omega0 & mask
     Omega2 = Omega0 & !mask
-
+    
     maxRank = min(n,q)/2
     mySI= softImpute(Y,NULL,Omega0, Omega1, Omega2, NULL,maxRank)
     Z = mySI[["Z"]]
@@ -887,20 +887,20 @@ InitialEst <- function(Y, X, lambda = NULL){
     Znorm = mySI[["znorm"]]
     Alpha = mySI[["Alpha"]]
     bestind_lam = min(Err)==Err;
-
+    
     lambda = min(Alpha[bestind_lam])
   }
-
-  myB <- c()
+  
+  #myB <- c()
+  myB <- matrix(NA, p, q)
   print("Building Initial Estimate")
   for(SNP_col in 1:ncol(X)){
     #print(paste("Building initial estimate: On column", SNP_col,"of",ncol(X)))
     X1 <- matrix(X[,SNP_col], ncol = 1)
     LS <- LORSscreen(Y, X1, lambda, 0.01)
-    B_row <- LS$B
-    myB <- rbind(myB, B_row)
+    myB[SNP_col,] <- LS$B
   }
-
+  
   return(list("B"  = myB))
 }
 
@@ -944,20 +944,21 @@ rankHC <- function(Bhat_standardized){
   for (j in 1:nrow(Bhat_standardized)){
     if(length(which(Bhat_standardized[j,] == 0)) != ncol(Bhat_standardized)){  #### for very sparse matrices, some rows may be all 0.  Don't want to calculate HC for these
       t_vec <- sort(abs(Bhat_standardized[j,]), decreasing=FALSE)
-      t_vec <- t_vec[1:(length(t_vec) - 2)] ### values at the end of t_vec can be extreme
-
+      #t_vec <- t_vec[1:(length(t_vec) - 2)] ### values at the end of t_vec can be extreme
+      t_vec <- t_vec[1:(length(t_vec) - 1)] ### values at the end of t_vec can be extreme
+      
       HC = max(sqrt(q)*(S(t_vec, Bhat_standardized[j,])/q - 2 * survival(t_vec)) / sqrt(2 * survival(t_vec) * (1 - 2 * survival(t_vec))))
       HC_vec <- c(HC_vec, HC)
     }
-
+    
     if(length(which(Bhat_standardized[j,] == 0)) == ncol(Bhat_standardized)){  #### for very sparse matrices, some rows may be all 0.  HC = 0 for these
       HC_vec <- c(HC_vec, 0)
     }
-
+    
   }
-
+  
   sorted_HC <- sort(HC_vec, index.return=TRUE, decreasing=TRUE)
-
+  
   return(list("index" = sorted_HC$ix, "HC_vec" = HC_vec))
 }
 
@@ -1035,20 +1036,20 @@ survival <- function(t){
 #' }
 
 LORSscreen <- function(Y, X, lambda, tol){
-
+  
   eps = 2.2204e-16
-
+  
   n = nrow(Y)
   q = ncol(Y)
-
+  
   B = matrix(0, nrow = 1, ncol=q)
   mu = matrix(0, nrow=1, ncol=q)
-
+  
   maxIter = 100
-
+  
   fval_old = 0
   for (iter in 1:maxIter){
-
+    
     #### Compute L
     mysvd <-svd(Y - X%*%B-matrix(1, nrow = n, ncol = 1) %*% mu)
     U <- mysvd[["u"]]
@@ -1062,29 +1063,29 @@ LORSscreen <- function(Y, X, lambda, tol){
       W[index_list[s],index_list[s]] = d[index_list[s]] - lambda
     }
     L <- U[,index_list] %*% W %*% VT[index_list,]
-
+    
     #### Solve the Least Squares Problem
-
+    
     Z <- Y - L
     A <- cbind(X,1)
     myqr <- qr(A)
     Q <- qr.Q(myqr)
     R <- qr.R(myqr)
     B_QR <- solve(t(R) %*% R) %*% t(A) %*% Z
-
+    
     B <- matrix(B_QR[1,], nrow = 1, ncol = q)
     mu <- matrix(B_QR[2,], nrow = 1, ncol = q)
-
+    
     dum = Y - X%*%B - matrix(1, nrow = n, ncol = 1)%*%mu - L
     dum = c(dum)
     fval = 0.5 * t(dum) %*% dum + lambda*sum(abs(diag(W)))
-
+    
     res = abs(fval-fval_old)/abs(fval_old+eps)
-
+    
     if (res < tol){
       break
     }
-
+    
     fval_old <- fval
   }
   return (list("B" = B, "L" = L, "mu" = mu))
@@ -1146,6 +1147,7 @@ HC_Screening <- function(Y, X){
 #' @param eps constant used when checking the convergence.  Ensures no division by 0.
 #' @param tol tolerance level for convergence
 #' @param omega_SOR the value of omega to use if applying successive over-relaxation with FastLORS.
+#' @param quickRho chooses whether to run an abbreviated parameter tuning procedure (6 middle candidates of the original sequence of 20 rho values). Default is FALSE.
 #' @importFrom glmnet glmnet
 #' @importFrom stats runif
 #' @return \item{LORS_Obj or Fast_LORS_Obj}{A list produced from LORS or FastLORS containing (1) B: estimate of the coefficient matrix (2) L:  estimate of the matrix of hidden factors (3) mu: estiamte of the vector of intercepts (4) f_val_vec: objective function values and (5) res_vec: relative change in objective function values} \item{selectedSNPs}{The SNPs selected by the screening method} \item{screening_time}{The time (in seconds) spent on screening step} \item{param_time}{The time (in seconds) spent on the parameter tuning step} \item{model_time}{The time (in seconds) spent on the joint modeling step} \item{total_time}{The time (in seconds) spent on the screening, parameter tuning, and joint modeling steps}  \item{rho}{The value of rho chosen through parameter tuning} \item{lambda}{The value of lambda chosen through parameter tuning}
@@ -1174,9 +1176,9 @@ HC_Screening <- function(Y, X){
 #' ## Usage
 #' Run_LORS(Y, X, method = "FastLORS")
 
-Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tune_method = "FastLORS", seed = 123,  maxiter = 10000, eps = 2.2204e-16, tol = 1e-4, cross_valid = TRUE, omega_SOR = 1.999){
+Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tune_method = "FastLORS", seed = 123,  maxiter = 10000, eps = 2.2204e-16, tol = 1e-4, cross_valid = TRUE, omega_SOR = 1.999, quickRho = FALSE){
   start <- proc.time()
-
+  
   if(screening == "HC-Screening"){
     print("Beginning screening via HC-Screening")
     start_screening <- proc.time()
@@ -1185,7 +1187,7 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
     end_screening <- proc.time()
     screening_time <- end_screening[3] - start_screening[3]
   }
-
+  
   if(screening == "LORS-Screening"){
     print("Beginning screening via LORS-Screening")
     start_screening <- proc.time()
@@ -1194,25 +1196,25 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
     end_screening <- proc.time()
     screening_time <- end_screening[3] - start_screening[3]
   }
-
+  
   if(screening == "None"){
     selectedSNPs <- c(1:ncol(X))
     screening_time <- 0
   }
-
+  
   n <- nrow(Y)
   q <- ncol(Y)
   p <- ncol(X)
-
+  
   Omega0 <- !(is.na(Y))
   Y[is.na(Y)] <- 0
-
+  
   # first use soft-impute to select a reasonable lambda
   set.seed(seed)
   mask = matrix(runif(n*q) > 0.5, nrow = n, ncol = q)
   Omega1 = Omega0 & mask
   Omega2 = Omega0 & !mask
-
+  
   maxRank = min(n,q)/2
   print("Begin Parameter Tuning:  Performing two-fold cross validation")
   ParamTune <- function(Training, Validation, tune_method){
@@ -1223,24 +1225,34 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
     Znorm <- mySI[["znorm"]]
     Alpha <- mySI[["Alpha"]]
     bestind_lam <- min(Err)==Err;
-
+    
     lambda <- mean(Alpha[bestind_lam])
-
+    
     ## Get a good initialization of L
     L <- SVT(Y,lambda)
-
+    
     ## Set a sequence of rho
-
+    
     nrho <- 20
     MaxRho <- GetMaxRho(X, Y, L, Omega0)
-
+    
     rhoseq <- logspace(log10(MaxRho),log10(MaxRho*.05),nrho)
-
+    
+    ### Shortcut in the parameter tuning step.  Default is FALSE since we run models until convergence using HPC cluster whenever possible.
+    ### Include this option if the user doesn't want to run all 20 parameter tuning models (40 in cross validation).  This way, they can 
+    ### raise the maximum iterations to get a better chance at convergence.  Observed that the middle values are often chosen
+    ### in the data we have tried.  Therefore, delete 1-7 and 14-20
+    if(quickRho == TRUE){
+      rhoseq2 <- rhoseq[8:13]
+      rhoseq <- rhoseq2
+    }
+    nrho <- length(rhoseq)
+    
     rhoErr <- matrix(0, nrow = nrho, ncol = 1)
     B <- matrix(0, nrow = p, ncol = q)
     mu <- matrix(0, nrow = 1, ncol = q)
-    for( irho in 1:nrho){
-      print(paste("On rho",irho,"of 20"))
+    for( irho in 1:length(rhoseq)){
+      print(paste("On rho",irho,"of", length(rhoseq)))
       rho <- rhoseq[irho]
       if(tune_method == "FastLORS"){
         myL2 <- Fast_LORS_Tuning(Y = Y, X = X, rho = rho, lambda = lambda, Training = Training, Validation = Validation, tol = tol, maxiter = maxiter, B = B, L = L, mu = mu, omega_SOR = omega_SOR)
@@ -1254,13 +1266,13 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
       Err <- myL2[["Err"]]
       rhoErr[irho,1] <- Err
     }
-
+    
     ## use the best rho solve the optimization problem
     bestind_rho <- rhoErr==min(rhoErr)
     rho <- rhoseq[bestind_rho]
     return(list("rho" = rho, "lambda" = lambda))
   }
-
+  
   start_param <- proc.time()
   print("Beginning parameter tuning:  Fold 1")
   params1 <- ParamTune(Training = Omega1, Validation = Omega2, tune_method)
@@ -1275,7 +1287,7 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
   rho <- mean(c(params1[["rho"]], params2[["rho"]]))
   end_param <- proc.time()
   param_time <- end_param[3] - start_param[3]
-
+  
   if (method == "FastLORS"){
     print("Running FastLORS")
     start_model <- proc.time()
@@ -1288,7 +1300,7 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
                 "screening_time" = screening_time, "param_time" = param_time,
                 "model_time" = model_time, "total_time" = total_time, "rho" = rho, "lambda" = lambda))
   }
-
+  
   if (method == "LORS"){
     print("Running LORS")
     start_model <- proc.time()
@@ -1301,7 +1313,7 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
                 "screening_time" = screening_time, "param_time" = param_time,
                 "model_time" = model_time, "total_time" = total_time, "rho" = rho, "lambda" = lambda))
   }
-
+  
 }
 
 #' Fast_LORS_Tuning
@@ -1328,14 +1340,14 @@ Run_LORS <- function(Y, X, method = "FastLORS", screening = "LORS-Screening", tu
 #'
 
 Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 5000, eps = 2.2204e-16, tol = 1e-4, B = NULL, mu = NULL, L = NULL, omega_SOR = 1.999) {
-
+  
   ### Initial Setup
-
+  
   n <- nrow(Y)
   q <- ncol(Y)
   p <- ncol(X)
   ones <- matrix(1, nrow = n, ncol = 1)
-
+  
   if(is.null(B) == TRUE){
     B <- matrix(0, nrow = p, ncol = q)
   }
@@ -1345,9 +1357,9 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
   if(is.null(L) == TRUE){
     L <- matrix(0, nrow = n, ncol = q)
   }
-
+  
   ### Proximal Mapping Functions
-
+  
   ## Nuclear Norm:  Soft Thresholded SVD
   svd_st <- function(X, lambda){
     mysvd <- svd(X)
@@ -1368,126 +1380,126 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
     if(length(index_list) == 0){
       L <- matrix(0, nrow(X), ncol(X))
     }
-
+    
     return(L)
   }
-
+  
   ## 1 norm:  Soft Threshold Function
   prox_1 <- function(b, tau){
     prox_b <- sign(b)*(sapply(abs(b) - tau, FUN=function(x) {max(x,0)}))
     return(prox_b)
   }
-
+  
   fval_old <- 0
   f_val_vec <- c()
   res_vec <- c()
-
+  
   t_L <- 1
   t_B <- 1/(max(svd(X)$d)^2)
   t_mu <- 1/nrow(Y)
-
+  
   ones <- matrix(1, nrow = n, ncol = 1)
-
+  
   for(iter in 1:maxiter){
-
+    
     #### Update B, mu, and L
     L <- svd_st(L - t_L * (Training * (X %*% B + ones %*% mu + L - Y)), t_L * lambda)
     B <- prox_1(B - t_B * t(X) %*% (Training * (X %*% B + ones %*% mu + L - Y)), t_B * rho)
     mu <- mu - t_mu * t(ones) %*% (Training * (X %*% B + ones %*% mu + L - Y))
-
+    
     ## Update via SOR
-
+    
     if(iter > 1){
       L_update <- (1-omega_SOR) * L_update + omega_SOR * L
       B_update <- (1-omega_SOR) * B_update + omega_SOR * B
       mu_update <- (1-omega_SOR) * mu_update + omega_SOR * mu
-
+      
       L <- L_update
       B <- B_update
       mu <- mu_update
     }
-
+    
     if(iter == 1){
       L_update <- L
       B_update <- B
       mu_update <- mu
-
+      
       L <- L_update
       B <- B_update
       mu <- mu_update
     }
-
+    
     #### Check Convergence
-
+    
     dum <- c(Training * (Y - X %*% B - ones%*%mu - L))
     fval <- 0.5 * norm(dum, type = "2")^2 + rho * sum(abs(B)) + lambda*sum(svd(L)[["d"]])
-
+    
     res = abs(fval-fval_old)/abs(fval_old+eps)
-
+    
     fval_old <- fval
     f_val_vec <- c(f_val_vec, fval)
     res_vec <- c(res_vec, res)
-
+    
     #print(paste('Iter ', iter, 'fval', fval, 'res', res))
-
+    
     if (res < tol){
       break
     }
-
+    
     if(iter > 1){
       if(f_val_vec[iter] > f_val_vec[iter-1]){
         break
       }
     }
-
+    
     residual = Y - X%*%B - matrix(1, nrow = n, ncol = 1) %*% mu - L
     err = residual*Validation
     Err = t(c(err)) %*% c(err) / sum(Validation)
-
+    
   }
-
+  
   if(iter < maxiter & res >= tol){
     #print("Beginning LORS Updates")
     energy = Inf
-
+    
     for (iter_LORS in (iter + 1):maxiter){
-
+      
       for (innerIts in 1:50){
-
+        
         Z = Y - X %*% B - matrix(1, nrow = n, ncol = 1) %*% mu;
         C = Z*Training + L*(!Training)
-
+        
         U = svd(C)[["u"]]
         D = diag(svd(C)[["d"]])
         V = svd(C)[["v"]]
         VT = t(V)
         # soft impute
         d = diag(D)
-
+        
         index_list = which(d > lambda)
-
+        
         W = diag(d[index_list] - lambda, nrow = length(index_list), ncol = length(index_list))
         L = U[,index_list] %*% W %*% VT[index_list,]
-
+        
         Lnorm = sum(d[index_list] - lambda)
         energy_old = energy
-
+        
         cL = c(L)
         cZ = c(Z)
         newvec = matrix(cL[c(Training == 1)]-cZ[c(Training == 1)], ncol = 1)
         energy = lambda * Lnorm + norm(newvec,'F')/2
-
+        
         mydiff = abs(energy - energy_old) / energy_old
-
+        
         if (!is.na(mydiff)){
           if (abs(energy - energy_old) / energy_old < tol){
             break
           }
         }
       }
-
+      
       ### Compute B using glmnet
-
+      
       for (j in 1:q){
         fit <- glmnet(X[Training[,j],], matrix(Y[Training[,j],j]) - matrix(L[Training[,j],j]), family = "gaussian", lambda = rho/sum(Training[,j]), standardize = FALSE)
         a0 <- fit[["a0"]]
@@ -1496,30 +1508,30 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
         B[,j] <- my_beta
         mu[,j] <- a0
       }
-
+      
       # Convergence
       residual = Y - X%*%B - matrix(1, nrow = n, ncol = 1) %*% mu - L
       dum = residual*Training
       dum = c(dum)
       fval = 0.5 * t(dum) %*% dum + rho * sum(abs(c(B))) + lambda*sum(abs(diag(W)))
       res = abs(fval-fval_old)/abs(fval_old+eps)
-
+      
       fval_old <- fval
       f_val_vec <- c(f_val_vec, fval)
       res_vec <- c(res_vec, res)
-
+      
       #print(paste('Iter ', iter_LORS, 'fval', fval, 'res', res))
-
+      
       if (res < tol){
         break
       }
-
+      
     }
-
+    
     err = residual*Validation
     Err = t(c(err)) %*% c(err) / sum(Validation)
   }
-
+  
   ### Return the B, L, mu, objective function values, residual values, and total iterates
   return(list("B" = B, "L" = L, "mu" = mu, "Err" = Err, "f_vals" = f_val_vec, "res_vec" = res_vec, "iter" = iter))
 }
@@ -1560,21 +1572,21 @@ Fast_LORS_Tuning <- function(Y, X, rho, lambda, Training, Validation, maxiter = 
 #' selectedSNPs <- Run_LORS_Screening(Y, X)
 
 Run_LORS_Screening <- function(Y, X, lambda = NULL){
-
+  
   n = nrow(Y)
   q = ncol(Y)
   p = ncol(X)
-
+  
   Omega0 = !(is.na(Y))
   Y[is.na(Y)] <- 0
-
+  
   if(is.null(lambda) == TRUE){
     # first use soft-impute to select a reasonable lambda
     set.seed(123456789)
     mask = matrix(runif(n*q) > 0.5, nrow = n, ncol = q)
     Omega1 = Omega0 & mask
     Omega2 = Omega0 & !mask
-
+    
     maxRank = min(n,q)/2
     mySI= softImpute(Y,NULL,Omega0, Omega1, Omega2, NULL,maxRank)
     Z = mySI[["Z"]]
@@ -1583,20 +1595,22 @@ Run_LORS_Screening <- function(Y, X, lambda = NULL){
     Znorm = mySI[["znorm"]]
     Alpha = mySI[["Alpha"]]
     bestind_lam = min(Err)==Err;
-
+    
     lambda = min(Alpha[bestind_lam])
   }
-
-  myB <- c()
+  
+  #myB <- c()
+  myB <- matrix(NA, p, q)
   print("Building Initial Estimate")
-  for(SNP_col in 1:ncol(X)){
+  for(SNP_col in 1:p){
     #print(paste("Building initial estimate: On column", SNP_col,"of",ncol(X)))
     X1 <- matrix(X[,SNP_col], ncol = 1)
     LS <- LORSscreen(Y, X1, lambda, 0.01)
-    B_row <- LS$B
-    myB <- rbind(myB, B_row)
+    #B_row <- LS$B
+    #myB <- rbind(myB, B_row)
+    myB[SNP_col,] <- LS$B
   }
-
+  
   index_list = c()
   for (i in 1:ncol(myB)){
     cands = abs(myB[,i])
@@ -1643,20 +1657,20 @@ Run_LORS_Screening <- function(Y, X, lambda = NULL){
 #' ParamTuneParallel(Y, X, fold = 1)
 
 ParamTuneParallel <- function(Y, X, fold, seed = 123){
-
+  
   n <- nrow(Y)
   q <- ncol(Y)
   p <- ncol(X)
-
+  
   Omega0 <- !(is.na(Y))
   Y[is.na(Y)] <- 0
-
+  
   # first use soft-impute to select a reasonable lambda
   set.seed(seed)
   mask = matrix(runif(n*q) > 0.5, nrow = n, ncol = q)
   Omega1 = Omega0 & mask
   Omega2 = Omega0 & !mask
-
+  
   maxRank = min(n,q)/2
   print("Begin Parameter Tuning:  Performing two-fold cross validation")
   myParamTune <- function(Training, Validation, tune_method){
@@ -1667,17 +1681,17 @@ ParamTuneParallel <- function(Y, X, fold, seed = 123){
     Znorm <- mySI[["znorm"]]
     Alpha <- mySI[["Alpha"]]
     bestind_lam <- min(Err)==Err;
-
+    
     lambda <- mean(Alpha[bestind_lam])
-
+    
     ## Get a good initialization of L
     L <- SVT(Y,lambda)
-
+    
     ## Set a sequence of rho
-
+    
     nrho <- 20
     MaxRho <- GetMaxRho(X, Y, L, Omega0)
-
+    
     rhoseq <- logspace(log10(MaxRho),log10(MaxRho*.05),nrho)
     return(list("lambda" = lambda, "rhoseq" = rhoseq))
   }
@@ -1731,20 +1745,20 @@ ParamTuneParallel <- function(Y, X, fold, seed = 123){
 LORS_Screen_Parallel <- function(Y, X, chunk){
   start_col <- (chunk - 1) * 1000 + 1
   end_col <- min(c(ncol(X), (chunk - 1) * 1000 + 1000))
-
+  
   n = nrow(Y)
   q = ncol(Y)
   p = ncol(X)
-
+  
   Omega0 = !(is.na(Y))
   Y[is.na(Y)] <- 0
-
+  
   # first use soft-impute to select a reasonable lambda
   set.seed(123456789)
   mask = matrix(runif(n*q) > 0.5, nrow = n, ncol = q)
   Omega1 = Omega0 & mask
   Omega2 = Omega0 & !mask
-
+  
   maxRank = min(n,q)/2
   set.seed(123456789)
   mySI= softImpute(Y,NULL,Omega0, Omega1, Omega2, NULL,maxRank)
@@ -1754,9 +1768,9 @@ LORS_Screen_Parallel <- function(Y, X, chunk){
   Znorm = mySI[["znorm"]]
   Alpha = mySI[["Alpha"]]
   bestind_lam = min(Err)==Err;
-
+  
   lambda = min(Alpha[bestind_lam])
-
+  
   myB <- c()
   print("Building Initial Estimate")
   for(SNP_col in start_col:end_col){
